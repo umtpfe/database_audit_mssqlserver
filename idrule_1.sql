@@ -1,14 +1,17 @@
 /* table sans clé primaire */
 
-select distinct t.name, t.object_id from sys.tables t inner join sys.columns c on
-t.object_id = c.object_id
-where c.object_id not in (select ck.parent_object_id from sys.key_constraints ck );
+SELECT DISTINCT t.name, t.object_id 
+    FROM sys.tables t
+    INNER JOIN sys.columns c 
+ 	ON t.object_id = c.object_id
+    WHERE c.object_id NOT IN (SELECT ck.parent_object_id
+			       FROM sys.key_constraints ck );
 
 /* fiche d'identité
 role = DBA
 categorie = CON
 type = SQL
 basetype  = sqlserver
-url = NULL
+url = https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-key-constraints-transact-sql?view=sql-server-2017
 etat = 1 */
 

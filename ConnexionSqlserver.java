@@ -20,7 +20,7 @@ public class ConnexionSqlserver
             String userName = "sa";
             String password = "Formafast.2014";
             String url = "jdbc:sqlserver://vps338739.ovh.net:1433"+";databaseName=master";
-            java.sql.Connection con =  DriverManager.getConnection(url, userName, password);
+            java.sql.Connection conSqlServer =  DriverManager.getConnection(url, userName, password);
             System.out.println("connexion établie à mssqlserver");
 				
 		}catch(Exception e) 

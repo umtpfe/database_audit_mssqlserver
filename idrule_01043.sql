@@ -1,12 +1,13 @@
-/*type de clé étrangère différent de clé primaire */
+/* type de clé étrangère différent de clé primaire */
 
 
-
-
-
-
-
-
+SELECT isc.table_name nom_table_referée , isc.column_name, isc.data_type, isc1.table_name nom_table_origin, isc1.column_name, isc1.data_type  
+    FROM INFORMATION_SCHEMA.COLUMNS isc, INFORMATION_SCHEMA.COLUMNS isc1, INFORMATION_SCHEMA.TABLE_CONSTRAINTS istc, sys.foreign_keys fk
+    WHERE isc.TABLE_NAME <> isc1.TABLE_NAME
+     AND isc.COLUMN_NAME = isc1.COLUMN_NAME
+     AND isc.TABLE_NAME = istc.TABLE_NAME
+     AND istc.CONSTRAINT_name = fk.name
+     AND isc.DATA_TYPE <> isc1.DATA_TYPE ;
 
 /* fiche d'identité
 role = DBA
@@ -15,42 +16,5 @@ type = SQL
 basetype  = sqlserver
 url = NULL
 etat = 1
-
-PENDANT ORACLE:
-
-libelle = type de clé étrangère différent de clé primaire
-basetype  = oracle
-url = NULL
-etat = 1
-code:
-SELECT c.table_name,
-       c.column_name,
-       c.constraint_name,
-       u.data_type,
-       c1.table_name,
-       c1.column_name,
-       a1.R_constraint_name,
-       u1.data_type
-  FROM user_cons_columns c,
-       user_constraints a,
-       user_cons_columns c1,
-       user_constraints a1,
-       USER_TAB_COLUMNS u,
-       USER_TAB_COLUMNS u1
- WHERE     c.constraint_name = a.constraint_name
-       AND c1.constraint_name = a1.constraint_name
-       AND a.constraint_type = 'P'
-       AND a1.constraint_type = 'R'
-       AND c.constraint_name = a1.R_constraint_name
-       AND u.table_name = c.table_name
-       AND u1.table_name = c1.table_name
-       AND u.column_name = c.column_name
-       AND u1.column_name = c1.column_name
-       AND u.data_type <> u1.data_type
-       AND c.constraint_name IN
-              (SELECT A.R_CONSTRAINT_NAME
-                 FROM user_cons_columns c, user_constraints a
-                WHERE c.constraint_name = a.constraint_name
-                      AND constraint_type = 'R');
 */
 

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.formatfast.connect.ConnexionMysql;
+import com.formatfast.connect.ConnexionSqlserver;
 import com.mysql.jdbc.Connection;
 
 /**
@@ -20,17 +21,20 @@ import com.mysql.jdbc.Connection;
 @WebServlet("/MaServlet")
 public class MaServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    Connection con = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
+    Connection ConMySql = null;
+    Connection ConSqlServer = null;
+    PreparedStatement PsMySql = null;
+    PreparedStatement PsSqlServer = null;
+    ResultSet RsMySql = null;
+    ResultSet RsSqlServer = null;
     /**
      * @see HttpServlet#HttpServlet()
      */
     public MaServlet() {
         super();
         // TODO Auto-generated constructor stub
-        con = ConnexionMysql.getConnexion();
-       
+        ConMySql = ConnexionMysql.getConnexion();
+        ConSqlServer = ConnexionSqlserver.getConnection();
     }
 
 	/**
@@ -39,23 +43,6 @@ public class MaServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		response.getWriter().append("Served at: ").append(request.getContextPath());
-		
-		/*
-		 * String requete = "SELECT * FROM rule WHERE categorie = ? AND type = ?"; try {
-		 * ps = con.prepareStatement(requete); ps.setString(1, "con"); ps.setString(2,
-		 * "sql");
-		 * 
-		 * rs = ps.executeQuery(); if(rs.next()) {
-		 * System.out.println("Requete effectuée qvec succès"); }
-		 * 
-		 * 
-		 * } catch (Exception e) { // TODO Auto-generated catch block
-		 * e.printStackTrace(); }finally { try { rs.close(); ps.close(); } catch
-		 * (SQLException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-		 * }
-		 */
-		 
-	
 		this.getServletContext().getRequestDispatcher("/WEB-INF/page.jsp").forward(request, response);
 	}
 

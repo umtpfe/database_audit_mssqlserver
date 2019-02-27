@@ -8,24 +8,25 @@ import java.sql.*;
 
 import com.mysql.jdbc.Connection;
 
-public class ConnexionSqlserver {
-
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-
-		String ConnectionURL = "jdbc:sqlserver://vps338739.ovh.net:1433;"+"databaseName=master;integratedSecurity=true;";
-		Connection conn = null;
-		Statement stmt = null;
-		ResultSet rst = null;
+public class ConnexionSqlserver 
+	{
+	public static Connection getConnection() {
+		
+		Connection ConSqlServer = null;
+		
 		try {
-			
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-			conn = (Connection) DriverManager.getConnection(ConnectionURL);
-			System.out.println("connexion effectuee");
-			
+
+            String userName = "sa";
+            String password = "Formafast.2014";
+            String url = "jdbc:sqlserver://vps338739.ovh.net:1433"+";databaseName=master";
+            java.sql.Connection con =  DriverManager.getConnection(url, userName, password);
+            System.out.println("connexion établie à mssqlserver");
+				
 		}catch(Exception e) 
 		{
 			System.out.println(e.getMessage());
 		}
-		
+		return ConSqlServer;
 	}
 }

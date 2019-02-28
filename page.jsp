@@ -11,7 +11,7 @@
 	<body>
 		<fieldset>
 			<legend>Coordonnées de la base SQLServer cible</legend>
-			<form action="page" method="post" >
+			<form action="MaServlet" method="post" >
 				<table>
 					<tr>
 						<td><label for=host >Hostname</label></td>
@@ -40,6 +40,8 @@
 				</table>
 			</form>
 		</fieldset>
+		
+		
 		
 	</body>
 </html>

@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;*/
 import java.sql.*;
 
+import com.formatfast.servlets.MaServlet;
 import com.mysql.jdbc.Connection;
 
 public class ConnexionSqlserver 
@@ -16,16 +17,10 @@ public class ConnexionSqlserver
 		
 		try {
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-
-			/*
-			 * String userName = "sa"; String password = "Formafast.2014"; String port =
-			 * (String) "1433" ;
-			 */
-           /* String databaseName = "master";*/
             String url = "jdbc:sqlserver://"+host+":"+port+";databaseName="+database+"";
             java.sql.Connection conSqlServer =  DriverManager.getConnection(url, username, password);
             System.out.println("connexion établie à mssqlserver");
-				
+			MaServlet.testConnexion = true;
 		}catch(Exception e) 
 		{
 			System.out.println(e.getMessage());

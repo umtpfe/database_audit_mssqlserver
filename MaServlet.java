@@ -3,8 +3,6 @@ package com.formatfast.servlets;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -29,6 +27,9 @@ public class MaServlet extends HttpServlet {
     
     ResultSet RsMySql = null;
     ResultSet RsSqlServer = null;
+    
+    
+    public static boolean testConnexion = false;
     /**
      * @see HttpServlet#HttpServlet()
      */    
@@ -52,31 +53,30 @@ public class MaServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		
-		String host = request.getParameter("host");
-		String port = request.getParameter("port");
-		String database = request.getParameter("database");
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
-		
-		
-		
-		request.setAttribute("host", host);
-		request.setAttribute("port", port);
-		request.setAttribute("database", database);
-		request.setAttribute("username", username);
-		request.setAttribute("password", password);
-		
-		ConSqlServer = ConnexionSqlserver.getConnection(host,port,database,username,password);
-		
-		/*traitement sql*/
-		
-		  
-		
-		
-		
-		this.getServletContext().getRequestDispatcher("/WEB-INF/connecter.jsp").forward(request, response);
-		
+	
+			String host = request.getParameter("host");
+			String port = request.getParameter("port");
+			String database = request.getParameter("database");
+			String username = request.getParameter("username");
+			String password = request.getParameter("password");
+			
+			request.setAttribute("host", host);
+			request.setAttribute("port", port);
+			request.setAttribute("database", database);
+			request.setAttribute("username", username);
+			request.setAttribute("password", password);
+			
+			ConSqlServer = ConnexionSqlserver.getConnection(host,port,database,username,password);
+			
+			if( testConnexion=true )
+			{
+				this.getServletContext().getRequestDispatcher("/WEB-INF/connecter.jsp").forward(request, response);
+			}else
+			{
+				/* traitement*/
+				
+			}
+			
 	}
 
 	@Override

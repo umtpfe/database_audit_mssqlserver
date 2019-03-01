@@ -39,8 +39,11 @@
 					</tr>
 				</table>
 			</form>
-		</fieldset>
+		</fieldset>	
 		
+		<c:if test="${conAtv == 1 }" > 
+			<a href=MaServlet >Télecharger le fichier</a>
+		</c:if>
 		
 		
 	</body>

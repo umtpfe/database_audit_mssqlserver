@@ -20,11 +20,11 @@ public class ConnexionSqlserver
             String url = "jdbc:sqlserver://"+host+":"+port+";databaseName="+database+"";
             java.sql.Connection conSqlServer =  DriverManager.getConnection(url, username, password);
             System.out.println("connexion établie à mssqlserver");
-			MaServlet.testConnexion = true;
+            MaServlet.conAtv= 1;
 		}catch(Exception e) 
 		{
 			System.out.println(e.getMessage());
-			System.out.println("echec");
+			System.out.println("echec de la connexion à la base");
 		}
 		return ConSqlServer;
 	}

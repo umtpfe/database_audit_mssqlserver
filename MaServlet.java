@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.formatfast.connect.ConnexionMysql;
 import com.formatfast.connect.ConnexionSqlserver;
 import com.mysql.jdbc.Connection;
-import com.mysql.jdbc.ResultSetMetaData;
 
 /**
  * Servlet implementation class HelloServlet
@@ -81,60 +80,65 @@ public class MaServlet extends HttpServlet {
 			psmysql = conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
-				String idrule = rsmysql.getString("idrule");
-				String libelle = rsmysql.getString("libelle");
-				String code = rsmysql.getString("code");
-				String role = rsmysql.getString("role");
-				String categorie = rsmysql.getString("categorie");
-				String type = rsmysql.getString("type");
+				String idrule     = rsmysql.getString("idrule");
+				String libelle    = rsmysql.getString("libelle");
+				String code       = rsmysql.getString("code");
+				String role       = rsmysql.getString("role");
+				String categorie  = rsmysql.getString("categorie");
+				String type       = rsmysql.getString("type");
 				String diagnostic = rsmysql.getString("diagnostic");
-				String url = rsmysql.getString("url");
-				String basetype = rsmysql.getString("basetype");
+				String url        = rsmysql.getString("url");
+				String basetype   = rsmysql.getString("basetype");
+				
+				System.out.println("Rule : " + idrule + " " + libelle);
 
 				bufferedwriter.write("idrule = " + idrule + "\nLibelle = " + libelle + "\ncode = " + code + "\nrole = "
 						+ role + "\ncategorie" + categorie + "\ntype = " + type + "\ndiagnostic = " + diagnostic
-						+ "\nurl = " + url + "\nbasetype = " + basetype + "\nResultat:\n");
+						+ "\nurl = " + url + "\nbasetype = " + basetype + "\nResultat:\n==============================\n");
 
-				/*exécution de la requete recupere dans mysql */
+				/* exécution de la requete recupere dans mysql */
 				pssqlserver = consqlserver.prepareStatement(code);
 				rssqlserver = pssqlserver.executeQuery();
 
+				/* Affichage des colonnes titres */
 				java.sql.ResultSetMetaData rsmd = rssqlserver.getMetaData();
-				System.out.println("RESULAT: \n");
 				int columnsNumber = rsmd.getColumnCount();
-				
 				for (int j = 1; j <= columnsNumber; j++) {
-					if (j > 1) bufferedwriter.append(" | ");	
+					if (j > 1)
+						bufferedwriter.append(" | ");
 					bufferedwriter.append(rsmd.getColumnName(j));
 				}
 				bufferedwriter.append("\n");
+				/* Affichage des données de la table resultat */
 				while (rssqlserver.next()) {
-					/*ecriture du resultat dans le fichier */
 					for (int i = 1; i <= columnsNumber; i++) {
-						if (i > 1) bufferedwriter.append(" | ");
+						if (i > 1)
+							bufferedwriter.append(" | ");
 						String columnValue = (String) rssqlserver.getString(i);
 						bufferedwriter.append(columnValue);
-						if (i == columnsNumber)	bufferedwriter.append(" \n ");
+						if (i == columnsNumber)
+							bufferedwriter.append(" \n ");
 					}
 				}
-				bufferedwriter.append("\n\n");
+				bufferedwriter.append("\n===========================================\n");
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 
-		/*telechargement du fichier*/
-		  PrintWriter out = response.getWriter(); String filename = "reponse.txt";
-		  String filepath = "//home//meril//eclipse//jee-2018-12//eclipse//";
-		  response.setContentType("APPLICATION/OCTET-STREAM");
-		  response.setHeader("Content-Disposition", "attachement; filename=\"" + filename + "\"");
-		  FileInputStream fi = new FileInputStream(filepath + filename);
-		  int i;
-		  while ((i = fi.read()) != -1) { 
-			  out.write(i);
-			  }
-		  fi.close();
-		  out.close();	 
+		/* telechargement du fichier */
+		PrintWriter out = response.getWriter();
+		String filename = "reponse.txt";
+		String filepath = "//home//meril//eclipse//jee-2018-12//eclipse//";
+		response.setContentType("APPLICATION/OCTET-STREAM");
+		response.setHeader("Content-Disposition", "attachement; filename=\"" + filename + "\"");
+		FileInputStream fi = new FileInputStream(filepath + filename);
+		int i;
+		while ((i = fi.read()) != -1) {
+			out.write(i);
+		}
+		fi.close();
+		out.close();
 	}
 
 	@Override

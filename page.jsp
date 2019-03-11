@@ -39,12 +39,6 @@
 					</tr>
 				</table>
 			</form>
-		</fieldset>	
-		
-		<c:if test="${conAtv == 1 }" > 
-			<a href=MaServlet >Télecharger le fichier</a>
-		</c:if>
-		
-		
+		</fieldset>			
 	</body>
 </html>

@@ -3,15 +3,11 @@ package com.formatfast.servlets;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.formatfast.connect.ConnexionMysql;
 import com.formatfast.connect.ConnexionSqlserver;
 import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.ResultSetMetaData;
 
 /**
  * Servlet implementation class HelloServlet
@@ -28,24 +25,22 @@ import com.mysql.jdbc.Connection;
 @WebServlet("/MaServlet")
 public class MaServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	Connection ConMySql = null;
-	Connection ConSqlServer = null;
+	Connection conmysql = null;
+	java.sql.Connection consqlserver = null;
 
-	PreparedStatement PsMySql = null;
-	PreparedStatement PsSqlServer = null;
+	PreparedStatement psmysql = null;
+	PreparedStatement pssqlserver = null;
 
-	ResultSet RsMySql = null;
-	ResultSet RsSqlServer = null;
+	ResultSet rsmysql = null;
+	ResultSet rssqlserver = null;
 
-    public static int conAtv = 0;
-	
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public MaServlet() {
 		super();
 		// TODO Auto-generated constructor stub
-		ConMySql = ConnexionMysql.getConnexion();
+		conmysql = ConnexionMysql.getConnexion();
 	}
 
 	/**
@@ -67,105 +62,87 @@ public class MaServlet extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 
-		 String host = request.getParameter("host"); 
-		 String port = request.getParameter("port");
-		 String database = request.getParameter("database");
-		 String username = request.getParameter("username"); 
-		 String password = request.getParameter("password");
-		  
-		 ConSqlServer = ConnexionSqlserver.getConnection(host,port,database,username,password);
-		 
-		 File reponse = new File("reponse.txt");
-		 System.out.println (reponse.getAbsolutePath());
-		 
-		String sql = "SELECT *  FROM rule_1 where categorie='con' and type='sql' ";
-		try ( BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(reponse)) )
-		  { 
-			try 
-			{
-				PsMySql = ConMySql.prepareStatement(sql); 
-				  RsMySql =	 PsMySql.executeQuery();
-				  while (RsMySql.next())
-				  { 
-					  String idrule = RsMySql.getString("idrule"); 
-					  String libelle = RsMySql.getString("libelle");
-					  String code = RsMySql.getString("code"); 
-					  String role = RsMySql.getString("role"); 
-					  String categorie = RsMySql.getString("categorie");
-					  String type = RsMySql.getString("type");
-					  String diagnostic = RsMySql.getString("diagnostic");
-					  String url = RsMySql.getString("url");
-					  String basetype = RsMySql.getString("basetype"); 	
-					  
-					  bufferedwriter.write("idrule = "+idrule);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("libelle = "+libelle);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("code = "+code);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("role = "+role);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("categorie = "+categorie);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("type = "+type);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("diagnostic = "+diagnostic);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("url = "+url);
-					  bufferedwriter.newLine();
-					  bufferedwriter.write("basetype = "+basetype);
-					  bufferedwriter.newLine();
-					  bufferedwriter.newLine();
-					  bufferedwriter.newLine();
-					  
-				  }		
-			}catch(Exception e1) 
-			{	
-				e1.printStackTrace();
-			}		 
-		  }
-		  catch (Exception e)
-		  	{
-			  e.printStackTrace();
-		  	}
-		request.setAttribute("conAtv", conAtv);
-		this.getServletContext().getRequestDispatcher("/WEB-INF/page.jsp").forward(request, response);
-		
-		/* test du programme de telechargement du fichier 
-		  
-		 
-		PrintWriter out = response.getWriter();
-		String filename = "reponse.txt";
-		String filepath = "/home/meril/eclipse/jee-2018-12/eclipse/";
-		response.setContentType("APPLICATION/OCTET-STREAM");
-		response.setHeader("Content-Disposition","attachement; filename=\"" + filename + "\"");
-		FileInputStream fi = new FileInputStream(filepath+filename);
-		int i;
-		while((i=fi.read()) != -1) {
-			out.write(i);}
-			out.close();
-			fi.close();
-		*/
-		
-		}	 
+		/* connexion a sql server */
+		String host = request.getParameter("host");
+		String port = request.getParameter("port");
+		String database = request.getParameter("database");
+		String username = request.getParameter("username");
+		String password = request.getParameter("password");
+		consqlserver = ConnexionSqlserver.getConnection(host, port, database, username, password);
+
+		/* creation du fichier pour le retour de la reponse */
+		File reponse = new File("reponse.txt");
+		System.out.println(reponse.getAbsolutePath());
+
+		/* execution de la requete pour la table id_rule_1 */
+		String sql = "SELECT * FROM rule_1 where categorie='con' and type='sql' ";
+
+		try (BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(reponse))) {
+			psmysql = conmysql.prepareStatement(sql);
+			rsmysql = psmysql.executeQuery();
+			while (rsmysql.next()) {
+				String idrule = rsmysql.getString("idrule");
+				String libelle = rsmysql.getString("libelle");
+				String code = rsmysql.getString("code");
+				String role = rsmysql.getString("role");
+				String categorie = rsmysql.getString("categorie");
+				String type = rsmysql.getString("type");
+				String diagnostic = rsmysql.getString("diagnostic");
+				String url = rsmysql.getString("url");
+				String basetype = rsmysql.getString("basetype");
+
+				bufferedwriter.write("idrule = " + idrule + "\nLibelle = " + libelle + "\ncode = " + code + "\nrole = "
+						+ role + "\ncategorie" + categorie + "\ntype = " + type + "\ndiagnostic = " + diagnostic
+						+ "\nurl = " + url + "\nbasetype = " + basetype + "\nResultat:\n");
+
+				/*exécution de la requete recupere dans mysql */
+				pssqlserver = consqlserver.prepareStatement(code);
+				rssqlserver = pssqlserver.executeQuery();
+
+				java.sql.ResultSetMetaData rsmd = rssqlserver.getMetaData();
+				System.out.println("RESULAT: \n");
+				int columnsNumber = rsmd.getColumnCount();
+				
+				for (int j = 1; j <= columnsNumber; j++) {
+					if (j > 1) bufferedwriter.append(" | ");	
+					bufferedwriter.append(rsmd.getColumnName(j));
+				}
+				bufferedwriter.append("\n");
+				while (rssqlserver.next()) {
+					/*ecriture du resultat dans le fichier */
+					for (int i = 1; i <= columnsNumber; i++) {
+						if (i > 1) bufferedwriter.append(" | ");
+						String columnValue = (String) rssqlserver.getString(i);
+						bufferedwriter.append(columnValue);
+						if (i == columnsNumber)	bufferedwriter.append(" \n ");
+					}
+				}
+				bufferedwriter.append("\n\n");
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		/*telechargement du fichier*/
+		  PrintWriter out = response.getWriter(); String filename = "reponse.txt";
+		  String filepath = "//home//meril//eclipse//jee-2018-12//eclipse//";
+		  response.setContentType("APPLICATION/OCTET-STREAM");
+		  response.setHeader("Content-Disposition", "attachement; filename=\"" + filename + "\"");
+		  FileInputStream fi = new FileInputStream(filepath + filename);
+		  int i;
+		  while ((i = fi.read()) != -1) { 
+			  out.write(i);
+			  }
+		  fi.close();
+		  out.close();	 
+	}
+
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		super.service(req, resp);		
+
+		super.service(req, resp);
+
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }

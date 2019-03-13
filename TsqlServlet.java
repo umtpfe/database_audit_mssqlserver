@@ -77,15 +77,15 @@ public class TsqlServlet extends HttpServlet {
 			psmysql = (PreparedStatement) conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
-				String idrule = rsmysql.getString("idrule");
-				String libelle = rsmysql.getString("libelle");
-				String code = rsmysql.getString("code");
-				String role = rsmysql.getString("role");
-				String categorie = rsmysql.getString("categorie");
-				String type = rsmysql.getString("type");
+				String idrule     = rsmysql.getString("idrule");
+				String libelle    = rsmysql.getString("libelle");
+				String code 	  = rsmysql.getString("code");
+				String role 	  = rsmysql.getString("role");
+				String categorie  = rsmysql.getString("categorie");
+				String type 	  = rsmysql.getString("type");
 				String diagnostic = rsmysql.getString("diagnostic");
-				String url = rsmysql.getString("url");
-				String basetype = rsmysql.getString("basetype");
+				String url 		  = rsmysql.getString("url");
+				String basetype   = rsmysql.getString("basetype");
 
 				System.out.println("Rule : " + idrule + " " + libelle);
 
@@ -95,6 +95,7 @@ public class TsqlServlet extends HttpServlet {
 						+ "\nResultat:\n==============================\n");
 
 				switch (idrule) {
+
 				case "4": /* */
 					break;
 
@@ -102,21 +103,45 @@ public class TsqlServlet extends HttpServlet {
 					String sqlt = "SELECT DISTINCT table_name from INFORMATION_SCHEMA.COLUMNS";
 					pssqlserver = consqlserver.prepareStatement(sqlt);
 					rssqlserver = pssqlserver.executeQuery();
+					/* fixation de la table cible */
 					while (rssqlserver.next()) {
 						String tablename = rssqlserver.getString("table_name");
-						String sqlc = " SELECT column_name FROM information_schema.columns WHERE table_name = "
-								+ tablename;
+						if (tablename.equals("pub_info"))
+							{ break; }
+						String sqlc = " SELECT column_name FROM information_schema.columns WHERE table_name = '"+ tablename +"' ;";
 						java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
 						ResultSet rs = ps.executeQuery();
+						/* execution sur chaque colonne de la table cible */
 						while (rs.next()) {
 							String nom_colonne = rs.getString("column_name");
-							java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(code);
-							ps1.setString(1, nom_colonne);
-							ps1.setString(2, tablename);
-
-							System.out.println(tablename + nom_colonne + "\n");
+							String var1 = " SELECT COUNT (DISTINCT ";
+							String var2 = " ) nbre_de_valeur_identique FROM ";
+							
+							bufferedwriter.append("Nom de la table: " + tablename + "\n");
+							bufferedwriter.append("Nom de la table: " + nom_colonne + "\n");
+							java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1 + nom_colonne + var2 + tablename + " ;");
+							ResultSet rs1 = ps1.executeQuery();
+							/*ecriture du resultat sur le fichier */
+							java.sql.ResultSetMetaData rsmd = rs1.getMetaData();
+							int columnsNumber = rsmd.getColumnCount();
+							for (int j = 1; j <= columnsNumber; j++) {
+								if (j > 1)
+									bufferedwriter.append(" | ");
+								bufferedwriter.append(rsmd.getColumnName(j));
+							}
+							bufferedwriter.append("\n");
+							while (rs1.next()) {
+								for (int i = 1; i <= columnsNumber; i++) {
+									if (i > 1)
+										bufferedwriter.append(" | ");
+									String columnValue = rs1.getString(i);
+									bufferedwriter.append(columnValue);
+									if (i == columnsNumber)
+										bufferedwriter.append(" \n ");
+								}
+							}
+							bufferedwriter.append("\n============================\n\n");
 						}
-
 					}
 
 					break;
@@ -126,13 +151,17 @@ public class TsqlServlet extends HttpServlet {
 					pssqlserver = consqlserver.prepareStatement(sqltablename);
 					rssqlserver = pssqlserver.executeQuery();
 					while (rssqlserver.next()) {
+						/* fixation de la table */
 						String table = rssqlserver.getString("table_name");
-						String var1 = " DECLARE @tb nvarchar(512) = N'" + table + "'";
-						String var2 = " \nDECLARE @sqlt nvarchar(max) = N'SELECT * from ' + @tb + ' WHERE 1 = 0 ' \n";
+						/* declaration des variables de parcourt  */
+						String var1  = " DECLARE @tb nvarchar(512) = N'" + table + "'";
+						String var2  = " \nDECLARE @sqlt nvarchar(max) = N'SELECT * from ' + @tb + ' WHERE 1 = 0 ' \n";
 						System.out.println(table);
 						bufferedwriter.append("Nom de la table: " + table + "\n");
+						/* execution de la requete pour chaque colonne  */
 						java.sql.PreparedStatement ps = consqlserver.prepareStatement(var1 + var2 + code);
 						ResultSet rs = ps.executeQuery();
+						/* ecriture du resultat sur le ficher */
 						java.sql.ResultSetMetaData rsmd = rs.getMetaData();
 						int columnsNumber = rsmd.getColumnCount();
 						for (int j = 1; j <= columnsNumber; j++) {
@@ -157,11 +186,11 @@ public class TsqlServlet extends HttpServlet {
 					}
 					break;
 
-				case "139": /* Vérifier les statistiques sur les colonnes d''un utilisateur */
+				case "139": /* Vérifier les statistiques sur les colonnes d'un utilisateur */
 
 					break;
 
-				case "140": /* Statistiques sur les indexes d''un utilisateur */
+				case "140": /* Statistiques sur les indexes d'un utilisateur */
 
 					break;
 

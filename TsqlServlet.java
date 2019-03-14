@@ -61,12 +61,12 @@ public class TsqlServlet extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 
-		String host = request.getParameter("host");
-		String port = request.getParameter("port");
+		String host     = request.getParameter("host");
+		String port     = request.getParameter("port");
 		String database = request.getParameter("database");
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		consqlserver = SqlserverConnection.getConnection(host, port, database, username, password);
+		consqlserver    = SqlserverConnection.getConnection(host, port, database, username, password);
 
 		File test = new File("test.txt");
 		System.out.println(test.getAbsolutePath());
@@ -77,15 +77,15 @@ public class TsqlServlet extends HttpServlet {
 			psmysql = (PreparedStatement) conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
-				String idrule = rsmysql.getString("idrule");
-				String libelle = rsmysql.getString("libelle");
-				String code = rsmysql.getString("code");
-				String role = rsmysql.getString("role");
-				String categorie = rsmysql.getString("categorie");
-				String type = rsmysql.getString("type");
+				String idrule     = rsmysql.getString("idrule");
+				String libelle    = rsmysql.getString("libelle");
+				String code 	  = rsmysql.getString("code");
+				String role 	  = rsmysql.getString("role");
+				String categorie  = rsmysql.getString("categorie");
+				String type 	  = rsmysql.getString("type");
 				String diagnostic = rsmysql.getString("diagnostic");
-				String url = rsmysql.getString("url");
-				String basetype = rsmysql.getString("basetype");
+				String url 		  = rsmysql.getString("url");
+				String basetype   = rsmysql.getString("basetype");
 
 				System.out.println("Rule : " + idrule + " " + libelle);
 
@@ -106,17 +106,16 @@ public class TsqlServlet extends HttpServlet {
 					/* fixation de la table cible */
 					while (rssqlserver.next()) {
 						String tablename = rssqlserver.getString("name");
-						
-							
-							String sqlc = " SELECT column_name FROM information_schema.columns WHERE table_name = '"
-									+ tablename + "' ;";
-							java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
-							ResultSet rs = ps.executeQuery();
-							/* execution sur chaque colonne de la table cible */
-							while (rs.next()) {
-								String nom_colonne = rs.getString("column_name");
-								try {
-								
+
+						String sqlc = " SELECT column_name FROM information_schema.columns WHERE table_name = '"
+								+ tablename + "' ;";
+						java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
+						ResultSet rs = ps.executeQuery();
+						/* execution sur chaque colonne de la table cible */
+						while (rs.next()) {
+							String nom_colonne = rs.getString("column_name");
+							try {
+
 								String var1 = " SELECT COUNT (DISTINCT ";
 								String var2 = " ) nbre_de_valeur_identique FROM ";
 								bufferedwriter.append("\nNom de la table: " + tablename + "\n");
@@ -143,13 +142,12 @@ public class TsqlServlet extends HttpServlet {
 											bufferedwriter.append(" \n ");
 									}
 								}
-								
-							bufferedwriter.append("\n============================\n\n");
-							
-						}catch(Exception e) {
-							System.out.println("type de colonne incompatible pour une fonction COUNT");
-							bufferedwriter.append("\n La colonne "+ nom_colonne + " de la table "+tablename+" est incompatible pour une fonction COUNT\n");
-						}
+								bufferedwriter.append("\n============================\n\n");
+							} catch (Exception e) {
+								System.out.println("type de colonne incompatible pour une fonction COUNT");
+								bufferedwriter.append("\n La colonne " + nom_colonne + " de la table " + tablename
+										+ " est incompatible pour une fonction COUNT\n");
+							}
 						}
 					}
 					break;
@@ -188,7 +186,6 @@ public class TsqlServlet extends HttpServlet {
 							}
 						}
 						bufferedwriter.append("\n============================\n\n");
-
 					}
 					break;
 
@@ -242,9 +239,8 @@ public class TsqlServlet extends HttpServlet {
 								bufferedwriter.append("il existe deja une satistique pour la colonne " + nom_colonne
 										+ " de la table " + table + "\n");
 							}
-						}bufferedwriter.append("\n============================\n\n");
-						
-
+						}
+						bufferedwriter.append("\n============================\n\n");
 					}
 					break;
 
@@ -288,22 +284,59 @@ public class TsqlServlet extends HttpServlet {
 										bufferedwriter.append(" \n ");
 								}
 							}
-
-						}bufferedwriter.append("\n============================\n\n");
-						
-
+						}
+						bufferedwriter.append("\n============================\n\n");
 					}
-					
+
 					break;
 
 				case "577": /*
 							 * Désactiver toutes les contraintes de clé étrangère de l'utilisateur connecté
 							 */
 
+					String sql577 = "SELECT name FROM sys.tables";
+					pssqlserver = consqlserver.prepareStatement(sql577);
+					rssqlserver = pssqlserver.executeQuery();
+					/* fixation de la table cible */
+					while (rssqlserver.next()) {
+						String table = rssqlserver.getString("name");
+						/* parcours des indexs de la table */
+						String sqlc = " SELECT fk.name from sys.foreign_keys fk inner JOIN sys.tables t on fk.parent_object_id = t.object_id\n"
+								+ "WHERE t.name = '" + table + "' ;";
+						java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
+						ResultSet rs = ps.executeQuery();
+						while (rs.next()) {
+							String nom_foreignkey = rs.getString("name");
+							String var1 = "ALTER TABLE " + table + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
+							java.sql.Statement st = consqlserver.createStatement();
+							st.execute(var1);
+							bufferedwriter.append("La clé "+nom_foreignkey+" a été désactivé sur la table "+table+"\n");
+						}
+					}
+
 					break;
 
 				case "578": /* Activer toutes les contraintes de clé étrangère de l'utilisateur connecté */
 
+					String sql578 = "SELECT name FROM sys.tables";
+					pssqlserver = consqlserver.prepareStatement(sql578);
+					rssqlserver = pssqlserver.executeQuery();
+					/* fixation de la table cible */
+					while (rssqlserver.next()) {
+						String table = rssqlserver.getString("name");
+						/* parcours des indexs de la table */
+						String sqlc = " SELECT fk.name from sys.foreign_keys fk inner JOIN sys.tables t on fk.parent_object_id = t.object_id\n"
+								+ "WHERE t.name = '" + table + "' ;";
+						java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
+						ResultSet rs = ps.executeQuery();
+						while (rs.next()) {
+							String nom_foreignkey = rs.getString("name");
+							String var1 = "ALTER TABLE " + table + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
+							java.sql.Statement st = consqlserver.createStatement();
+							st.execute(var1);
+							bufferedwriter.append("La clé "+nom_foreignkey+" a été activé sur la table "+table+"\n");
+						}
+					}
 					break;
 
 				case "763": /* Statistiques sur les indexes */
@@ -315,16 +348,15 @@ public class TsqlServlet extends HttpServlet {
 					while (rssqlserver.next()) {
 						String table = rssqlserver.getString("name");
 						/* parcours des indexs de la table */
-						String sqlc = " SELECT i.name FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id\n" + 
-								"WHERE t.name = '" + table
-								+ "' ;";
+						String sqlc = " SELECT i.name FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id\n"
+								+ "WHERE t.name = '" + table + "' ;";
 						java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
 						ResultSet rs = ps.executeQuery();
 						while (rs.next()) {
 							String nom_index = rs.getString("name");
-							
+
 							try {
-								
+
 								String var1 = " DBCC SHOW_STATISTICS (" + table + "," + nom_index + ")";
 								bufferedwriter.append("\nNom de la table: " + table + "\n");
 								bufferedwriter.append("Nom de l'index: " + nom_index + "\n");
@@ -350,16 +382,16 @@ public class TsqlServlet extends HttpServlet {
 									}
 								}
 
-							bufferedwriter.append("\n============================\n\n");
-								
-							}catch(Exception e) {
+								bufferedwriter.append("\n============================\n\n");
+
+							} catch (Exception e) {
 								System.out.println(" valeur de l'index incorect ou NULL ");
 								bufferedwriter.append(" Aucun index sur cette colonne");
 							}
 
+						}
 					}
-					}
-					
+
 					break;
 
 				case "1025": /* Statistiques sur les tables */
@@ -402,8 +434,8 @@ public class TsqlServlet extends HttpServlet {
 								}
 							}
 
-						}bufferedwriter.append("\n============================\n\n");
-						
+						}
+						bufferedwriter.append("\n============================\n\n");
 
 					}
 					break;
@@ -418,8 +450,6 @@ public class TsqlServlet extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
 
 		/* telechargement du fichier */
 		/*

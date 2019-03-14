@@ -70,13 +70,13 @@ public class MaServlet extends HttpServlet {
 		consqlserver = ConnexionSqlserver.getConnection(host, port, database, username, password);
 
 		/* creation du fichier pour le retour de la reponse */
-		File test2 = new File("test2.txt");
-		System.out.println(test2.getAbsolutePath());
+		File reponse = new File("reponse.txt");
+		System.out.println(reponse.getAbsolutePath());
 
 		/* execution de la requete pour la table id_rule_1 */
 		String sql = "SELECT * FROM rule_1 WHERE categorie='con' AND basetype='sqlserver'  ";
 
-		try (BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(test2))) {
+		try (BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(reponse))) {
 			psmysql = conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
@@ -489,7 +489,7 @@ public class MaServlet extends HttpServlet {
 
 		/* telechargement du fichier */
 		PrintWriter out = response.getWriter();
-		String filename = "test2.txt";
+		String filename = "reponse.txt";
 		String filepath = "//home//meril//eclipse//jee-2018-12//eclipse//";
 		response.setContentType("APPLICATION/OCTET-STREAM");
 		response.setHeader("Content-Disposition", "attachement; filename=\"" + filename + "\"");

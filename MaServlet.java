@@ -67,7 +67,7 @@ public class MaServlet extends HttpServlet {
 		String database = request.getParameter("database");
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		consqlserver = ConnexionSqlserver.getConnection(host, port, database, username, password);
+		consqlserver    = ConnexionSqlserver.getConnection(host, port, database, username, password);
 
 		/* creation du fichier pour le retour de la reponse */
 		File reponse = new File("reponse.txt");
@@ -87,7 +87,7 @@ public class MaServlet extends HttpServlet {
 				String categorie  = rsmysql.getString("categorie");
 				String type 	  = rsmysql.getString("type");
 				String diagnostic = rsmysql.getString("diagnostic");
-				String url 		  = rsmysql.getString("url");
+				String url 	  = rsmysql.getString("url");
 				String basetype   = rsmysql.getString("basetype");
 
 				System.out.println("Rule : " + idrule + " " + libelle);
@@ -227,13 +227,13 @@ public class MaServlet extends HttpServlet {
 					case "139": /* Vérifier les statistiques sur les colonnes d'un utilisateur */
 
 						String sql139 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql139);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver   = consqlserver.prepareStatement(sql139);
+						rssqlserver   = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							/* fixation de la table */
 							String table = rssqlserver.getString("name");
-							String sqlc = " SELECT column_name FROM information_schema.columns WHERE table_name = '"
+							String sqlc  = " SELECT column_name FROM information_schema.columns WHERE table_name = '"
 									+ table + "' ;";
 							java.sql.PreparedStatement ps = consqlserver.prepareStatement(sqlc);
 							ResultSet rs = ps.executeQuery();
@@ -282,8 +282,8 @@ public class MaServlet extends HttpServlet {
 					case "140": /* Statistiques sur les indexes d'un utilisateur */
 
 						String sql140 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql140);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver   = consqlserver.prepareStatement(sql140);
+						rssqlserver   = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							/* fixation de la table */
@@ -330,8 +330,8 @@ public class MaServlet extends HttpServlet {
 								 */
 
 						String sql577 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql577);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver   = consqlserver.prepareStatement(sql577);
+						rssqlserver   = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							String table = rssqlserver.getString("name");
@@ -355,8 +355,8 @@ public class MaServlet extends HttpServlet {
 					case "578": /* Activer toutes les contraintes de clé étrangère de l'utilisateur connecté */
 
 						String sql578 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql578);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver   = consqlserver.prepareStatement(sql578);
+						rssqlserver   = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							String table = rssqlserver.getString("name");
@@ -379,8 +379,8 @@ public class MaServlet extends HttpServlet {
 					case "763": /* Statistiques sur les indexes */
 
 						String sql763 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql763);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver   = consqlserver.prepareStatement(sql763);
+						rssqlserver   = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							String table = rssqlserver.getString("name");
@@ -433,8 +433,8 @@ public class MaServlet extends HttpServlet {
 
 					case "1025": /* Statistiques sur les tables */
 						String sql1025 = "SELECT name FROM sys.tables";
-						pssqlserver = consqlserver.prepareStatement(sql1025);
-						rssqlserver = pssqlserver.executeQuery();
+						pssqlserver    = consqlserver.prepareStatement(sql1025);
+						rssqlserver    = pssqlserver.executeQuery();
 						/* fixation de la table cible */
 						while (rssqlserver.next()) {
 							/* fixation de la table */

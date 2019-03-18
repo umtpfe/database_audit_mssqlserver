@@ -152,11 +152,12 @@ public class MaServlet extends HttpServlet {
 
 									bufferedwriter.append("\nNom de la table: " + name + "\n");
 									bufferedwriter.append("Nom de la colonne: " + colname + "\n");
-									String var1 = " SELECT COUNT (DISTINCT "+colname+" ) nbre_de_valeur_identique FROM "+name;
-									java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1);
-									ResultSet rs1 = ps1.executeQuery();
+									stt = consqlserver.prepareCall("{ call spsamevalue (?, ?)}");
+									stt.setObject(1, name, Types.NVARCHAR);
+									stt.setObject(2, colname, Types.NVARCHAR);
+									sc = stt.executeQuery();
 									/* ecriture du resultat sur le fichier */
-									java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
+									java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
 									int columnsNumber1 = rsmd1.getColumnCount();
 									for (int j = 1; j <= columnsNumber1; j++) {
 										if (j > 1)
@@ -164,11 +165,11 @@ public class MaServlet extends HttpServlet {
 										bufferedwriter.append(rsmd1.getColumnName(j));
 									}
 									bufferedwriter.append("\n");
-									while (rs1.next()) {
+									while (sc.next()) {
 										for (int i = 1; i <= columnsNumber1; i++) {
 											if (i > 1)
 												bufferedwriter.append(" | ");
-											String columnValue = rs1.getString(i);
+											String columnValue = sc.getString(i);
 											bufferedwriter.append(columnValue);
 											if (i == columnsNumber1)
 												bufferedwriter.append(" \n ");
@@ -219,10 +220,7 @@ public class MaServlet extends HttpServlet {
 								/* declaration des variables de parcourt */
 								try {
 									bufferedwriter.append("\nNom de la table: " + name + "\n");
-									bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
-									String stat = " CREATE STATISTICS " + nom_colonne + "ON " + name + "(" + nom_colonne + ");\n";
-									java.sql.Statement st = consqlserver.createStatement();
-									st.execute(stat);
+									bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");									
 									stt = consqlserver.prepareCall("{ call spstatcol ( ?, ?) }");
 									stt.setObject(1, name, Types.NVARCHAR);
 									stt.setObject(2, nom_colonne, Types.NVARCHAR);
@@ -303,11 +301,14 @@ public class MaServlet extends HttpServlet {
 							sc = stt.executeQuery();
 							while (sc.next()) {
 								String nom_foreignkey = sc.getString("name");
-								String var1 = "ALTER TABLE " + name + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
-								java.sql.Statement st = consqlserver.createStatement();
-								st.execute(var1);
+								stt = consqlserver.prepareCall("{ call spdesactivefk (?, ?) }");								
+								stt.setObject(1, name, Types.NVARCHAR);
+								stt.setObject(2, nom_foreignkey, Types.NVARCHAR);							
+								/*stt.registerOutParameter(3, java.sql.Types.VARCHAR);*/
+								stt.executeUpdate();
+								
 								bufferedwriter.append(
-										"La clé " + nom_foreignkey + " a été désactivé sur la table " + name + "\n");
+										"La clé " + nom_foreignkey + " a été désactivé sur la table " + name + "\n\n");
 							}
 							break;
 
@@ -318,11 +319,12 @@ public class MaServlet extends HttpServlet {
 							sc = stt.executeQuery();
 							while (sc.next()) {
 								String nom_foreignkey = sc.getString("name");
-								String var1 = "ALTER TABLE " + name + " CHECK CONSTRAINT " + nom_foreignkey + ";";
-								java.sql.Statement st = consqlserver.createStatement();
-								st.execute(var1);
+								stt = consqlserver.prepareCall("{ call spactivefk (?, ?) }");
+								stt.setObject(1, name, Types.NVARCHAR);
+								stt.setObject(2, nom_foreignkey, Types.NVARCHAR);
+								stt.executeUpdate();								
 								bufferedwriter.append(
-										"La clé " + nom_foreignkey + " a été activé sur la table " + name + "\n");
+										"La clé " + nom_foreignkey + " a été activé sur la table " + name + "\n\n");
 							}
 							break;
 

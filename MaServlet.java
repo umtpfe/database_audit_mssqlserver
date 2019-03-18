@@ -29,10 +29,10 @@ public class MaServlet extends HttpServlet {
 	Connection conmysql = null;
 	java.sql.Connection consqlserver = null;
 
-	PreparedStatement psmysql = null;
+	PreparedStatement psmysql	  = null;
 	PreparedStatement pssqlserver = null;
 
-	ResultSet rsmysql = null;
+	ResultSet rsmysql 	  = null;
 	ResultSet rssqlserver = null;
 
 	/**
@@ -82,7 +82,7 @@ public class MaServlet extends HttpServlet {
 			psmysql = conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
-				String idrule 	  = rsmysql.getString("idrule");
+				String idrule     = rsmysql.getString("idrule");
 				String libelle    = rsmysql.getString("libelle");
 				String code 	  = rsmysql.getString("code");
 				String role 	  = rsmysql.getString("role");
@@ -127,35 +127,33 @@ public class MaServlet extends HttpServlet {
 								bufferedwriter.append(" \n ");
 						}
 					}
-					bufferedwriter.append("\n===========================================\n");
+					bufferedwriter.append("\n===========================================\n\n");
 
 				} else {
-					
+
 					java.sql.CallableStatement cst = consqlserver.prepareCall("{ call sptable }");
 					ResultSet rsc = cst.executeQuery();
-					while(rsc.next()) {
+					while (rsc.next()) {
 						String name = rsc.getString("name");
-					
+
 						switch (idrule) {
 
 						case "4": /* */
 							break;
 
 						case "6": /* Toute une colonne à  la même valeur */
-							
+
 							java.sql.CallableStatement stt = consqlserver.prepareCall("{ call spcolumnname (?) }");
-							stt.setObject(1, name , Types.NVARCHAR );
+							stt.setObject(1, name, Types.NVARCHAR);
 							ResultSet sc = stt.executeQuery();
-							while(sc.next()) { 
+							while (sc.next()) {
 								String colname = sc.getString("column_name");
 								try {
 
-									String var1 = " SELECT COUNT (DISTINCT ";
-									String var2 = " ) nbre_de_valeur_identique FROM ";
 									bufferedwriter.append("\nNom de la table: " + name + "\n");
 									bufferedwriter.append("Nom de la colonne: " + colname + "\n");
-									java.sql.PreparedStatement ps1 = consqlserver
-											.prepareStatement(var1 + colname + var2 + name + " ;");
+									String var1 = " SELECT COUNT (DISTINCT "+colname+" ) nbre_de_valeur_identique FROM "+name;
+									java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1);
 									ResultSet rs1 = ps1.executeQuery();
 									/* ecriture du resultat sur le fichier */
 									java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
@@ -182,15 +180,14 @@ public class MaServlet extends HttpServlet {
 									bufferedwriter.append("\n La colonne " + colname + " de la table " + name
 											+ " est incompatible pour une fonction COUNT\n");
 								}
-							}			
+							}
 							break;
 
 						case "7": /* Valeur nulle dans une colonne */
-								stt = consqlserver.prepareCall("{ call spnullvalue (?) }");
-								stt.setObject(1, name , Types.NVARCHAR );
-								sc = stt.executeQuery();
-								while(sc.next()) { 
-								
+							stt = consqlserver.prepareCall("{ call spnullvalue (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
+							sc = stt.executeQuery();
+							while (sc.next()) {
 								java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
 								int columnsNumber1 = rsmd1.getColumnCount();
 								for (int j = 1; j <= columnsNumber1; j++) {
@@ -210,66 +207,69 @@ public class MaServlet extends HttpServlet {
 									}
 								}
 								bufferedwriter.append("\n============================\n\n");
-								}
+							}
 							break;
 
 						case "139": /* Vérifier les statistiques sur les colonnes d'un utilisateur */
 							stt = consqlserver.prepareCall("{ call spcolumnname (?) }");
-							stt.setObject(1, name , Types.NVARCHAR );
+							stt.setObject(1, name, Types.NVARCHAR);
 							sc = stt.executeQuery();
-							while(sc.next()) { 
-									String nom_colonne = sc.getString("column_name");
-									/* declaration des variables de parcourt */
-									try {
-
-										String var1 = " CREATE STATISTICS " + nom_colonne + " ";
-										String var2 = "ON " + name + "(" + nom_colonne + ");\n";
-										String var3 = " DBCC SHOW_STATISTICS " + "(" + name + "," + nom_colonne + ");";
-										bufferedwriter.append("\nNom de la table: " + name + "\n");
-										bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
-										java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1 + var2 + var3);
-										ResultSet rs1 = ps1.executeQuery();
-										/* ecriture du resultat sur le fichier */
-										java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
-										int columnsNumber1 = rsmd1.getColumnCount();
-										for (int j = 1; j <= columnsNumber1; j++) {
-											if (j > 1)
-												bufferedwriter.append(" | ");
-											bufferedwriter.append(rsmd1.getColumnName(j));
-										}
-										bufferedwriter.append("\n");
-										while (rs1.next()) {
-											for (int i = 1; i <= columnsNumber1; i++) {
-												if (i > 1)
-													bufferedwriter.append(" | ");
-												String columnValue = rs1.getString(i);
-												bufferedwriter.append(columnValue);
-												if (i == columnsNumber1)
-													bufferedwriter.append(" \n ");
-											}
-										}
-									} catch (Exception e) {
-										bufferedwriter.append("il existe deja une satistique pour la colonne " + nom_colonne
-												+ " de la table " + name + "\n");
+							while (sc.next()) {
+								String nom_colonne = sc.getString("column_name");
+								/* declaration des variables de parcourt */
+								try {
+									bufferedwriter.append("\nNom de la table: " + name + "\n");
+									bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
+									String stat = " CREATE STATISTICS " + nom_colonne + "ON " + name + "(" + nom_colonne + ");\n";
+									java.sql.Statement st = consqlserver.createStatement();
+									st.execute(stat);
+									stt = consqlserver.prepareCall("{ call spstatcol ( ?, ?) }");
+									stt.setObject(1, name, Types.NVARCHAR);
+									stt.setObject(2, nom_colonne, Types.NVARCHAR);
+									sc = stt.executeQuery();
+									/* ecriture du resultat sur le fichier */
+									java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
+									int columnsNumber1 = rsmd1.getColumnCount();
+									for (int j = 1; j <= columnsNumber1; j++) {
+										if (j > 1)
+											bufferedwriter.append(" | ");
+										bufferedwriter.append(rsmd1.getColumnName(j));
 									}
+									bufferedwriter.append("\n");
+									while (sc.next()) {
+										for (int i = 1; i <= columnsNumber1; i++) {
+											if (i > 1)
+												bufferedwriter.append(" | ");
+											String columnValue = sc.getString(i);
+											bufferedwriter.append(columnValue);
+											if (i == columnsNumber1)
+												bufferedwriter.append(" \n ");
+										}
+									}
+								} catch (Exception e) {
+									bufferedwriter.append("il existe deja une satistique pour la colonne " + nom_colonne
+											+ " de la table " + name + "\n");
 								}
-								bufferedwriter.append("\n============================\n\n");
+							}
+							bufferedwriter.append("\n============================\n\n");
 							break;
 
 						case "140": /* Statistiques sur les indexes d'un utilisateur */
-								/* parcours des colonne de la table */
-							stt = consqlserver.prepareCall("{ call spcolumnname (?) }");
-							stt.setObject(1, name , Types.NVARCHAR );
+
+							stt = consqlserver.prepareCall("{ call spindexname (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
 							sc = stt.executeQuery();
-							while(sc.next()) { 
-									String nom_colonne = sc.getString("column_name");
-									String var1 = " DBCC SHOW_STATISTICS (" + name + "," + nom_colonne + ")";
+							while (sc.next()) {
+								String nom_index = sc.getString("name");
+								try {
 									bufferedwriter.append("\nNom de la table: " + name + "\n");
-									bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
-									java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1);
-									ResultSet rs1 = ps1.executeQuery();
+									bufferedwriter.append("Nom de l'index: " + nom_index + "\n");
+									stt = consqlserver.prepareCall("{ call spstatindex ( ?, ?) }");
+									stt.setObject(1, name, Types.NVARCHAR);
+									stt.setObject(2, nom_index, Types.NVARCHAR);
+									sc = stt.executeQuery();
 									/* ecriture du resultat sur le fichier */
-									java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
+									java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
 									int columnsNumber1 = rsmd1.getColumnCount();
 									for (int j = 1; j <= columnsNumber1; j++) {
 										if (j > 1)
@@ -277,110 +277,71 @@ public class MaServlet extends HttpServlet {
 										bufferedwriter.append(rsmd1.getColumnName(j));
 									}
 									bufferedwriter.append("\n");
-									while (rs1.next()) {
+									while (sc.next()) {
 										for (int i = 1; i <= columnsNumber1; i++) {
 											if (i > 1)
 												bufferedwriter.append(" | ");
-											String columnValue = rs1.getString(i);
+											String columnValue = sc.getString(i);
 											bufferedwriter.append(columnValue);
 											if (i == columnsNumber1)
 												bufferedwriter.append(" \n ");
 										}
 									}
+									bufferedwriter.append("\n============================\n\n");
+								} catch (Exception e) {
+									System.out.println(" valeur de l'index incorect ou NULL ");
+									bufferedwriter.append(" valeur de l'index incorect ou NULL");
+									bufferedwriter.append("\n============================\n\n");
 								}
-								bufferedwriter.append("\n============================\n\n");
+							}
 							break;
 
-						case "577": /*
-							
-									 * Désactiver toutes les contraintes de clé étrangère de l'utilisateur connecté
-									 */
-								/* parcours des indexs de la table */
-								String sql577 = " SELECT fk.name from sys.foreign_keys fk inner JOIN sys.tables t on fk.parent_object_id = t.object_id\n"
-										+ "WHERE t.name = '" + name + "' ;";
-								java.sql.PreparedStatement ps = consqlserver.prepareStatement(sql577);
-								ResultSet rs = ps.executeQuery();
-								while (rs.next()) {
-									String nom_foreignkey = rs.getString("name");
-									String var1 = "ALTER TABLE " + name + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
-									java.sql.Statement st = consqlserver.createStatement();
-									st.execute(var1);
-									bufferedwriter.append(
-											"La clé " + nom_foreignkey + " a été désactivé sur la table " + name + "\n");
-								}
+						case "577": /* Désactiver toutes les contraintes de clé étrangère de l'utilisateur connecté */
+
+							stt = consqlserver.prepareCall("{ call spforeignkey (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
+							sc = stt.executeQuery();
+							while (sc.next()) {
+								String nom_foreignkey = sc.getString("name");
+								String var1 = "ALTER TABLE " + name + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
+								java.sql.Statement st = consqlserver.createStatement();
+								st.execute(var1);
+								bufferedwriter.append(
+										"La clé " + nom_foreignkey + " a été désactivé sur la table " + name + "\n");
+							}
 							break;
 
 						case "578": /* Activer toutes les contraintes de clé étrangère de l'utilisateur connecté */
-								/* parcours des indexs de la table */
-								String sql578 = " SELECT fk.name from sys.foreign_keys fk inner JOIN sys.tables t on fk.parent_object_id = t.object_id\n"
-										+ "WHERE t.name = '" + name + "' ;";
-								ps = consqlserver.prepareStatement(sql578);
-								rs = ps.executeQuery();
-								while (rs.next()) {
-									String nom_foreignkey = rs.getString("name");
-									String var1 = "ALTER TABLE " + name + " NOCHECK CONSTRAINT " + nom_foreignkey + ";";
-									java.sql.Statement st = consqlserver.createStatement();
-									st.execute(var1);
-									bufferedwriter.append(
-											"La clé " + nom_foreignkey + " a été activé sur la table " + name + "\n");
-								}							
+
+							stt = consqlserver.prepareCall("{ call spforeignkey (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
+							sc = stt.executeQuery();
+							while (sc.next()) {
+								String nom_foreignkey = sc.getString("name");
+								String var1 = "ALTER TABLE " + name + " CHECK CONSTRAINT " + nom_foreignkey + ";";
+								java.sql.Statement st = consqlserver.createStatement();
+								st.execute(var1);
+								bufferedwriter.append(
+										"La clé " + nom_foreignkey + " a été activé sur la table " + name + "\n");
+							}
 							break;
 
 						case "763": /* Statistiques sur les indexes */
-								/* parcours des indexs de la table */
-								String sql763 = " SELECT i.name FROM sys.indexes i INNER JOIN sys.tables t ON i.object_id = t.object_id\n"
-										+ "WHERE t.name = '" + name + "' ;";
-								ps = consqlserver.prepareStatement(sql763);
-								rs = ps.executeQuery();
-								while (rs.next()) {
-									String nom_index = rs.getString("name");
-									try {
-										String var1 = " DBCC SHOW_STATISTICS (" + name + "," + nom_index + ")";
-										bufferedwriter.append("\nNom de la table: " + name + "\n");
-										bufferedwriter.append("Nom de l'index: " + nom_index + "\n");
-										java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1);
-										ResultSet rs1 = ps1.executeQuery();
-										/* ecriture du resultat sur le fichier */
-										java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
-										int columnsNumber1 = rsmd1.getColumnCount();
-										for (int j = 1; j <= columnsNumber1; j++) {
-											if (j > 1)
-												bufferedwriter.append(" | ");
-											bufferedwriter.append(rsmd1.getColumnName(j));
-										}
-										bufferedwriter.append("\n");
-										while (rs1.next()) {
-											for (int i = 1; i <= columnsNumber1; i++) {
-												if (i > 1)
-													bufferedwriter.append(" | ");
-												String columnValue = rs1.getString(i);
-												bufferedwriter.append(columnValue);
-												if (i == columnsNumber1)
-													bufferedwriter.append(" \n ");
-											}
-										}
-										bufferedwriter.append("\n============================\n\n");
-									} catch (Exception e) {
-										System.out.println(" valeur de l'index incorect ou NULL ");
-										bufferedwriter.append(" Aucun index sur cette colonne");
-									}
-								}					
-							break;
-
-						case "1025": /* Statistiques sur les tables */
-								/* parcours des colonne de la table */
-							stt = consqlserver.prepareCall("{ call spcolumnname (?) }");
-							stt.setObject(1, name , Types.NVARCHAR );
+							/* parcours des indexs de la table */
+							stt = consqlserver.prepareCall("{ call spindexname (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
 							sc = stt.executeQuery();
-							while(sc.next()) { 
-									String nom_colonne = sc.getString("column_name");
-									String var1 = " DBCC SHOW_STATISTICS (" + name + "," + nom_colonne + ")";
+							while (sc.next()) {
+								String nom_index = sc.getString("name");
+								try {
 									bufferedwriter.append("\nNom de la table: " + name + "\n");
-									bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
-									java.sql.PreparedStatement ps1 = consqlserver.prepareStatement(var1);
-									ResultSet rs1 = ps1.executeQuery();
+									bufferedwriter.append("Nom de l'index: " + nom_index + "\n");
+									stt = consqlserver.prepareCall("{ call spstatindex ( ?, ?) }");
+									stt.setObject(1, name, Types.NVARCHAR);
+									stt.setObject(2, nom_index, Types.NVARCHAR);
+									sc = stt.executeQuery();
 									/* ecriture du resultat sur le fichier */
-									java.sql.ResultSetMetaData rsmd1 = rs1.getMetaData();
+									java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
 									int columnsNumber1 = rsmd1.getColumnCount();
 									for (int j = 1; j <= columnsNumber1; j++) {
 										if (j > 1)
@@ -388,18 +349,59 @@ public class MaServlet extends HttpServlet {
 										bufferedwriter.append(rsmd1.getColumnName(j));
 									}
 									bufferedwriter.append("\n");
-									while (rs1.next()) {
+									while (sc.next()) {
 										for (int i = 1; i <= columnsNumber1; i++) {
 											if (i > 1)
 												bufferedwriter.append(" | ");
-											String columnValue = rs1.getString(i);
+											String columnValue = sc.getString(i);
 											bufferedwriter.append(columnValue);
 											if (i == columnsNumber1)
 												bufferedwriter.append(" \n ");
 										}
 									}
+									bufferedwriter.append("\n============================\n\n");
+								} catch (Exception e) {
+									bufferedwriter.append(" valeur de l'index incorect ou NULL \n\n");
 								}
-								bufferedwriter.append("\n============================\n\n");
+							}
+							bufferedwriter.append("\n============================\n\n");
+
+							break;
+
+						case "1025": /* Statistiques sur les tables */
+							/* parcours des colonne de la table */
+							stt = consqlserver.prepareCall("{ call spcolumnname (?) }");
+							stt.setObject(1, name, Types.NVARCHAR);
+							sc = stt.executeQuery();
+							while (sc.next()) {
+								String nom_colonne = sc.getString("column_name");
+								bufferedwriter.append("\nNom de la table: " + name + "\n");
+								bufferedwriter.append("Nom de la colonne: " + nom_colonne + "\n");
+								stt = consqlserver.prepareCall("{ call spstatcol ( ?, ?) }");
+								stt.setObject(1, name, Types.NVARCHAR);
+								stt.setObject(2, nom_colonne, Types.NVARCHAR);
+								sc = stt.executeQuery();
+								/* ecriture du resultat sur le fichier */
+								java.sql.ResultSetMetaData rsmd1 = sc.getMetaData();
+								int columnsNumber1 = rsmd1.getColumnCount();
+								for (int j = 1; j <= columnsNumber1; j++) {
+									if (j > 1)
+										bufferedwriter.append(" | ");
+									bufferedwriter.append(rsmd1.getColumnName(j));
+								}
+								bufferedwriter.append("\n");
+								while (sc.next()) {
+									for (int i = 1; i <= columnsNumber1; i++) {
+										if (i > 1)
+											bufferedwriter.append(" | ");
+										String columnValue = sc.getString(i);
+										bufferedwriter.append(columnValue);
+										if (i == columnsNumber1)
+											bufferedwriter.append(" \n ");
+									}
+								}
+							}
+							bufferedwriter.append("\n============================\n\n");
 							break;
 						default:
 							System.out.println("autre idrule " + idrule);

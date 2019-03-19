@@ -131,7 +131,7 @@ public class MaServlet extends HttpServlet {
 
 				} else {
 
-					java.sql.CallableStatement cst = consqlserver.prepareCall("{ call sptable }");
+					java.sql.CallableStatement cst = consqlserver.prepareCall("{ call sptable }");					
 					ResultSet rsc = cst.executeQuery();
 					while (rsc.next()) {
 						String name = rsc.getString("name");

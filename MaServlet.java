@@ -24,7 +24,7 @@ import com.mysql.jdbc.Connection;
 /**
  * Servlet implementation class HelloServlet
  */
-@WebServlet("/MaServlet")
+@WebServlet("/traiter")
 public class MaServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Connection conmysql = null;
@@ -64,45 +64,47 @@ public class MaServlet extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 
-		/* connexion a sql server */
-		String host = request.getParameter("host");
-		String port = request.getParameter("port");
+		/* connexion à sql server */
+		String host     = request.getParameter("host");
+		String port     = request.getParameter("port");
 		String database = request.getParameter("database");
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		consqlserver = ConnexionSqlserver.getConnection(host, port, database, username, password);
+		consqlserver    = ConnexionSqlserver.getConnection(host, port, database, username, password);
 
-		/* creation du fichier pour le retour de la reponse */
-		File reponse = new File("reponse.txt");
-		System.out.println(reponse.getAbsolutePath());
+		/* création du fichier pour le retour de la réponse */
+		File dbname = new File(database+".txt");
+		String path = dbname.getPath();
 
-		/* execution de la requete pour la table id_rule_1 */
+		/* execution de la requête pour la table sur Mysql */
 		String sql = "SELECT * FROM rule_1 WHERE categorie='con' AND basetype='sqlserver'  ";
 
-		try (BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(reponse))) {
+		try (BufferedWriter bufferedwriter = new BufferedWriter(new FileWriter(dbname))) {
 			psmysql = conmysql.prepareStatement(sql);
 			rsmysql = psmysql.executeQuery();
 			while (rsmysql.next()) {
-				String idrule = rsmysql.getString("idrule");
-				String libelle = rsmysql.getString("libelle");
-				String code = rsmysql.getString("code");
-				String role = rsmysql.getString("role");
+				/* récupération des données */
+				String idrule    = rsmysql.getString("idrule");
+				String libelle   = rsmysql.getString("libelle");
+				String code      = rsmysql.getString("code");
+				String role      = rsmysql.getString("role");
 				String categorie = rsmysql.getString("categorie");
-				String type = rsmysql.getString("type");
+				String type      = rsmysql.getString("type");
 				String diagnostic = rsmysql.getString("diagnostic");
-				String url = rsmysql.getString("url");
-				String basetype = rsmysql.getString("basetype");
+				String url       = rsmysql.getString("url");
+				String basetype  = rsmysql.getString("basetype");
 
 				System.out.println("Rule : " + idrule + " " + libelle);
-
+				/* écriture de la fche d'identité dans le fichier */
 				bufferedwriter.write("idrule = " + idrule + "\nLibelle = " + libelle + "\ncode = " + code + "\nrole = "
 						+ role + "\ncategorie = " + categorie + "\ntype = " + type + "\ndiagnostic = " + diagnostic
 						+ "\nurl = " + url + "\nbasetype = " + basetype
 						+ "\nResultat:\n==============================\n");
 
+				/* SQL */
 				if (type.equals("sql")) {
 
-					/* exécution de la requete recupere dans mysql */
+					/* exécution de la requête récupérée dans Mysql */
 					if (code == null)
 						break;
 					pssqlserver = consqlserver.prepareStatement(code);
@@ -117,7 +119,7 @@ public class MaServlet extends HttpServlet {
 						bufferedwriter.append(rsmd.getColumnName(j));
 					}
 					bufferedwriter.append("\n");
-					/* Affichage des données de la table resultat */
+					/* Ecriture du résultat de la requête dans le fichier */
 					while (rssqlserver.next()) {
 						for (int i = 1; i <= columnsNumber; i++) {
 							if (i > 1)
@@ -130,11 +132,11 @@ public class MaServlet extends HttpServlet {
 					}
 					bufferedwriter.append("\n===========================================\n\n");
 
-				} else {
-
+				} else {  /* T-SQL */
+					/* création d'un fichier temporaire qui contiendra le script */
 					File tempfile = new File("tempfile.sql");
-					String temppath = tempfile.getAbsolutePath();
-					
+					String temppath = tempfile.getPath();
+					/* Ecriture du script dans le fichier */
 					try (BufferedWriter bufferedwriterrr = new BufferedWriter(new FileWriter(tempfile))) {
 						bufferedwriterrr.write(code);
 						bufferedwriterrr.close();
@@ -142,17 +144,19 @@ public class MaServlet extends HttpServlet {
 						e1.printStackTrace();
 						System.out.println("erreur d'ecriture");
 					}
-
+					/* Exécution du script */
 					try {
-						
-						Process process = Runtime.getRuntime().exec("//opt//mssql-tools//bin//sqlcmd -S "+host+" -d "+database+" -U "+username+" -P "+password+" -i "+temppath);
+
+						Process process = Runtime.getRuntime().exec("//opt//mssql-tools//bin//sqlcmd -S " + host
+								+ " -d " + database + " -U " + username + " -P " + password + " -i " + temppath);
 						StringBuilder output = new StringBuilder();
 						BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
+						/* Récuperation du resultat */
 						String line = " ";
 						while ((line = reader.readLine()) != null) {
 							output.append(line + "\n");
 						}
+						/* Ecriture du resultat dans le fichier de reponse */
 						int exitVal = process.waitFor();
 						if (exitVal == 0) {
 							System.out.println("Success!");
@@ -167,19 +171,19 @@ public class MaServlet extends HttpServlet {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
+					/* suppression du fichier temporaire apres exécution du script */
 					tempfile.delete();
 				}
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		/* telechargement du fichier */
+		/* téléchargement du fichier de réponse */
 		PrintWriter out = response.getWriter();
-		String filename = "reponse.txt";
-		String filepath = "//home//meril//eclipse//jee-2018-12//eclipse//";
+		String filename = database+".txt";
 		response.setContentType("APPLICATION/OCTET-STREAM");
 		response.setHeader("Content-Disposition", "attachement; filename=\"" + filename + "\"");
-		FileInputStream fi = new FileInputStream(filepath + filename);
+		FileInputStream fi = new FileInputStream(path);
 		int i;
 		while ((i = fi.read()) != -1) {
 			out.write(i);
@@ -189,10 +193,10 @@ public class MaServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 
-		super.service(req, resp);
+		super.service(request, response);
 
 	}
 

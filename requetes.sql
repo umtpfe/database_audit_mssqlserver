@@ -117,9 +117,9 @@ SET @chaine = @db + '.' + @schem + '.' + @taable + '('
 				SET @chaine = @chaine +'@'
 			FETCH NEXT FROM colcon INTO @var
 		END
-		SET @chaine = @chaine + @attribut
-		CLOSE colcon
-		DEALLOCATE colcon 
+	SET @chaine = @chaine + @attribut
+	CLOSE colcon
+	DEALLOCATE colcon 
 OPEN dync
 FETCH FIRST FROM dync INTO @db, @schem, @taable, @attribut
 SET @fetch_outer_cursor =  @@fetch_status
@@ -576,4 +576,15 @@ PRINT char(13)+'id_rule = 2001'+char(13)+'Titre = tables ayant le meme nom dans 
 SELECT * FROM INFORMATION_SCHEMA.TABLES it, INFORMATION_SCHEMA.TABLES it1
 WHERE it.TABLE_NAME = it1.TABLE_NAME 
 AND it.TABLE_SCHEMA <> it1.TABLE_SCHEMA
+GO
+
+PRINT char(13)+'id_rule = 2002'+char(13)+'Titre = liste des bases et schemas par serveur'
+DECLARE @sql nvarchar(max);
+SET @sql = N'select cast(''master'' as sysname) as db_name, name schema_name, schema_id, cast(1 as int) as database_id  from master.sys.schemas ';
+SELECT @sql = @sql + N' union all select ' + quotename(name,'''')+ ', name schema_name, schema_id, ' + CAST(database_id AS nvarchar(10)) + N' from ' + quotename(name) + N'.sys.schemas'
+FROM sys.databases WHERE database_id > 1
+AND state = 0
+AND user_access = 0;
+
+EXEC sp_executesql @sql;
 GO

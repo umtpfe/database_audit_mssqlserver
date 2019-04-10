@@ -9,8 +9,6 @@ AND user_access = 0;
 
 EXEC sp_executesql @sql;
 
-exec sp_executesql @sql;
-
 /* fiche d'identité
 role = DBA
 categorie = CON

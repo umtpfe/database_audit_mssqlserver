@@ -580,10 +580,97 @@ GO
 
 PRINT char(13)+'id_rule = 2002'+char(13)+'Titre = liste des bases et schemas par serveur'
 DECLARE @sql nvarchar(max);
-SET @sql = N'SELECT CAST(''master'' AS sysname) AS db_name, name schema_name, schema_id, CAST(1 AS int) AS database_id FROM master.sys.schemas ';
-SELECT @sql = @sql + N' UNION ALL SELECT ' + quotename(name,'''')+ N', name schema_name, schema_id, ' + CAST(database_id AS nvarchar(10)) + N' FROM ' + quotename(name) + N'.sys.schemas'
+SET @sql = N'select cast(''master'' as sysname) as db_name, name schema_name, schema_id, cast(1 as int) as database_id  from master.sys.schemas ';
+SELECT @sql = @sql + N' union all select ' + quotename(name,'''')+ ', name schema_name, schema_id, ' + CAST(database_id AS nvarchar(10)) + N' from ' + quotename(name) + N'.sys.schemas'
 FROM sys.databases WHERE database_id > 1
 AND state = 0
 AND user_access = 0;
+
 EXEC sp_executesql @sql;
+GO
+
+PRINT char(13)+'id_rule = 2003'+char(13)+'Titre = tables ayant les memes colonnes'
+DECLARE cur CURSOR FOR SELECT name FROM sys.tables
+DECLARE @model SYSNAME
+OPEN cur 
+FETCH NEXT FROM cur INTO @model
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	PRINT 'Table de meme colonnes que: '+@model
+	SELECT t.name FROM sys.tables AS t
+	WHERE name <> @model
+	AND EXISTS
+	(
+ 	 SELECT 1 FROM sys.columns AS c 
+ 	   WHERE [object_id] = t.[object_id]
+  	  AND EXISTS
+  	  (
+   	   SELECT 1 FROM sys.columns
+   	   WHERE [object_id] = OBJECT_ID(N'dbo.' + QUOTENAME(@model))
+   	   AND name = c.name
+  	  )
+	)
+	FETCH NEXT FROM cur INTO @model
+END
+CLOSE cur 
+DEALLOCATE cur
+GO
+
+PRINT char(13)+'id_rule = 2004'+char(13)+'Titre = tables ayant les memes colonnes et de memes type'
+DECLARE cur CURSOR FOR SELECT name FROM sys.tables order by name
+DECLARE @model SYSNAME
+OPEN cur 
+FETCH NEXT FROM cur INTO @model
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	PRINT 'Tables de memes nom de colonnes et de colonnes de memes type que: '+@model
+	SELECT t.name FROM sys.tables AS t
+	WHERE name <> @model
+	AND EXISTS
+	(
+ 	 SELECT 1 FROM sys.columns AS c 
+ 	   WHERE [object_id] = t.[object_id]
+  	  AND EXISTS
+  	  (
+   	   SELECT 1 FROM sys.columns
+   	   WHERE [object_id] = OBJECT_ID(N'dbo.'+quotename(@model))
+   	   and  TYPE_NAME(user_type_id) = TYPE_NAME(c.user_type_id) 
+   	   AND name = c.name
+  	  )
+	)
+	order by t.name
+	FETCH NEXT FROM cur INTO @model
+END
+CLOSE cur 
+DEALLOCATE cur
+GO
+
+PRINT char(13)+'id_rule = 2005'+char(13)+'Titre = tables ayant les memes colonnes et de memes type et de meme taille'
+DECLARE cur CURSOR FOR SELECT name FROM sys.tables order by name
+DECLARE @model SYSNAME
+OPEN cur 
+FETCH NEXT FROM cur INTO @model
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	PRINT 'Tables de memes nom de colonnes, de colonnes de memes type et de meme taille que: '+@model
+	SELECT t.name FROM sys.tables AS t
+	WHERE name <> @model
+	AND EXISTS
+	(
+ 	 SELECT 1 FROM sys.columns AS c 
+ 	   WHERE [object_id] = t.[object_id]
+  	  AND EXISTS
+  	  (
+   	   SELECT 1 FROM sys.columns
+   	   WHERE [object_id] = OBJECT_ID(N'dbo.'+quotename(@model))
+   	   and  TYPE_NAME(user_type_id) = TYPE_NAME(c.user_type_id) 
+   	   and max_length = col_length(t.name, c.name)
+   	   AND name = c.name
+  	  )
+	)
+	order by t.name
+	FETCH NEXT FROM cur INTO @model
+END
+CLOSE cur 
+DEALLOCATE cur 
 GO

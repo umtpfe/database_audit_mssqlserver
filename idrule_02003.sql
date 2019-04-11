@@ -11,11 +11,11 @@ BEGIN
 	WHERE name <> @model
 	AND EXISTS
 	(
- 	 SELECT 1 FROM sys.columns AS c 
+ 	 SELECT name FROM sys.columns AS c 
  	   WHERE [object_id] = t.[object_id]
   	  AND EXISTS
   	  (
-   	   SELECT 1 FROM sys.columns
+   	   SELECT name FROM sys.columns
    	   WHERE [object_id] = OBJECT_ID(N'dbo.' + QUOTENAME(@model))
    	   AND name = c.name
   	  )

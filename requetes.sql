@@ -601,11 +601,11 @@ BEGIN
 	WHERE name <> @model
 	AND EXISTS
 	(
- 	 SELECT 1 FROM sys.columns AS c 
+ 	 SELECT c.name FROM sys.columns AS c 
  	   WHERE [object_id] = t.[object_id]
   	  AND EXISTS
   	  (
-   	   SELECT 1 FROM sys.columns
+   	   SELECT name FROM sys.columns
    	   WHERE [object_id] = OBJECT_ID(N'dbo.' + QUOTENAME(@model))
    	   AND name = c.name
   	  )
@@ -628,11 +628,11 @@ BEGIN
 	WHERE name <> @model
 	AND EXISTS
 	(
- 	 SELECT 1 FROM sys.columns AS c 
+ 	 SELECT c.name FROM sys.columns AS c 
  	   WHERE [object_id] = t.[object_id]
   	  AND EXISTS
   	  (
-   	   SELECT 1 FROM sys.columns
+   	   SELECT name FROM sys.columns
    	   WHERE [object_id] = OBJECT_ID(N'dbo.'+quotename(@model))
    	   and  TYPE_NAME(user_type_id) = TYPE_NAME(c.user_type_id) 
    	   AND name = c.name
@@ -657,11 +657,11 @@ BEGIN
 	WHERE name <> @model
 	AND EXISTS
 	(
- 	 SELECT 1 FROM sys.columns AS c 
+ 	 SELECT c.name FROM sys.columns AS c 
  	   WHERE [object_id] = t.[object_id]
   	  AND EXISTS
   	  (
-   	   SELECT 1 FROM sys.columns
+   	   SELECT name FROM sys.columns
    	   WHERE [object_id] = OBJECT_ID(N'dbo.'+quotename(@model))
    	   and  TYPE_NAME(user_type_id) = TYPE_NAME(c.user_type_id) 
    	   and max_length = col_length(t.name, c.name)

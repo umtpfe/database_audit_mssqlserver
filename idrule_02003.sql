@@ -11,7 +11,7 @@ BEGIN
 	WHERE name <> @model
 	AND EXISTS
 	(
- 	 SELECT name FROM sys.columns AS c 
+ 	 SELECT c.name FROM sys.columns AS c 
  	   WHERE [object_id] = t.[object_id]
   	  AND EXISTS
   	  (

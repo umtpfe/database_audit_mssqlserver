@@ -1,13 +1,14 @@
 /*liste des bases et schemas par serveur*/
 
-DECLARE @sql nvarchar(max);
-SET @sql = N'SELECT CAST(''master'' AS sysname) AS db_name, name schema_name, schema_id, CAST(1 AS int) AS database_id FROM master.sys.schemas ';
-SELECT @sql = @sql + N' UNION ALL SELECT ' + quotename(name,'''')+ N', name schema_name, schema_id, ' + CAST(database_id AS nvarchar(10)) + N' FROM ' + quotename(name) + N'.sys.schemas'
-FROM sys.databases WHERE database_id > 1
-AND state = 0
-AND user_access = 0;
+declare @sql nvarchar(max);
+set @sql = N'select cast(''master'' as sysname) as db_name, name schema_name, schema_id, cast(1 as int) as database_id  from master.sys.schemas ';
 
-EXEC sp_executesql @sql;
+select @sql = @sql + N' union all select ' + quotename(name,'''')+ ', name schema_name, schema_id, ' + cast(database_id as nvarchar(10)) + N' from ' + quotename(name) + N'.sys.schemas'
+from sys.databases where database_id > 1
+and state = 0
+and user_access = 0;
+
+exec sp_executesql @sql;
 
 /* fiche d'identité
 role = DBA

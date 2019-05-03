@@ -26,6 +26,7 @@ FETCH NEXT FROM tab INTO @tabname
 END
 CLOSE tab 
 DEALLOCATE tab 	
+GO 
 
 
 /* fiche d'identité

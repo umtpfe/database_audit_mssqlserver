@@ -8,7 +8,7 @@ FROM sys.database_files ;
 
 /* fiche d'identité
 role = DBA
-categorie = CON
+categorie = INF
 type = SQL
 basetype  = sqlserver
 url = NULL

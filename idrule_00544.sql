@@ -5,7 +5,7 @@ SELECT
 	login_name,
 	host_name,
 	status
-from
+FROM
 	sys.dm_exec_sessions 
 WHERE
 	host_name IS NOT NULL

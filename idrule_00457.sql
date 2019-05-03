@@ -10,5 +10,5 @@ role = DBA
 categorie = INF
 type = SQL
 basetype  = sqlserver
-url = 1
+url = null
 etat = 1 */

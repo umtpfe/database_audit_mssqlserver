@@ -13,7 +13,7 @@ CROSS APPLY sys.dm_exec_sql_text(p.sql_handle) AS t
 
 /* fiche d'identité
 role = DBA
-categorie = CON
+categorie = INF
 type = SQL
 basetype  = sqlserver
 url = NULL

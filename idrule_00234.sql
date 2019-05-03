@@ -13,6 +13,7 @@ BEGIN
 END
 CLOSE cur 
 DEALLOCATE cur
+GO 
 
 /* fiche d'identite
 role = DBA

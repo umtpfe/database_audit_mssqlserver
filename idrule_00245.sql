@@ -9,6 +9,7 @@ BEGIN
 	SELECT * FROM sys.dm_exec_sessions WHERE session_id = @sid
 	FETCH NEXT FROM cur INTO @sid
 END
+GO
  
 /* fiche d'identite
 role = DBA

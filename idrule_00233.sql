@@ -18,6 +18,7 @@ BEGIN
 END
 CLOSE curseur
 DEALLOCATE curseur
+GO
 
 /* fiche d'identite
 role = DBA

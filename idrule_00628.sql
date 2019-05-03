@@ -4,7 +4,7 @@ SELECT * FROM sys.dm_exec_sessions WHERE session_id = @@spid AND status = 'runni
 
 /* fiche d'identité
 role = DBA
-categorie = CON
+categorie = INF
 type = SQL
 basetype  = sqlserver
 url = NULL

@@ -10,7 +10,8 @@ BEGIN
 	FETCH NEXT FROM cur INTO @nom
 END
 CLOSE cur 
-DEALLOCATE cur 
+DEALLOCATE cur
+GO 
 
 /* fiche d'identite
 role = DBA

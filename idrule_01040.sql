@@ -30,7 +30,7 @@ DEALLOCATE cur
 /* fiche d'identite
 role = DBA
 categorie = INF
-type = SQL
+type = Transact-SQL
 basetype = sqlserver
 url = NULL
 etat = 1 */

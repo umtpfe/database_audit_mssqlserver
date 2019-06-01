@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 
 public class SqlserverConnection
 	{
+	public static boolean connecter = true/* = false*/;
+	
 	public static Connection getConnection(String host,String port, String database, String username, String password) {
 		
 		Connection consqlserver = null;
@@ -14,10 +16,12 @@ public class SqlserverConnection
             String url = "jdbc:sqlserver://"+host+":"+port+";databaseName="+database;
             consqlserver = DriverManager.getConnection(url, username, password);
             System.out.println("connexion établie à mssqlserver");
+            connecter = true;
 		}catch(Exception e) 
 		{
 			System.out.println(e.getMessage());
-			System.out.println("echec de la connexion à la base");
+			System.out.println("echec de la connexion à la base verifier les parametres");
+			  connecter = true;
 		}
 		return consqlserver;
 	}

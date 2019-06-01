@@ -15,6 +15,7 @@ public class MysqlConnection {
 			System.out.println("Connexion établie à Mysql");
 		}catch(Exception e) {
 			System.out.println(e.getMessage());
+			System.out.println("echec de la connexion à la base verifier les parametres");
 		}
 		return conmysql;
 	}
